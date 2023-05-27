@@ -9,6 +9,10 @@ import java.util.*;
 import cse.java2.project.classes.owner;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -22,44 +26,57 @@ public class Get {
     private static final String API_ENDPOINT = "https://api.stackexchange.com/2.3/questions";
     private static final String SITE = "stackoverflow";
     private static final String TAGS = "java";
-    private static final int PAGE_SIZE = 30;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Logger.getLogger("org.apache.http").setLevel(Level.WARN);
         Logger.getLogger("org.apache.http.wire").setLevel(Level.WARN);
         List<Question> questions = new ArrayList<>();
-
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            for (int page = 1; page <= 20; page++) {
-                String url = API_ENDPOINT+"?page="+page+"&pagesize="+PAGE_SIZE+ "&site=" + SITE + "&tagged=" + TAGS;
-                HttpGet request = new HttpGet(url);
-                try (CloseableHttpResponse response = httpClient.execute(request)) {
-                    String json = EntityUtils.toString(response.getEntity());
-                    ObjectMapper mapper = new ObjectMapper();
-                    ResponseWrapper responseWrapper = mapper.readValue(json, ResponseWrapper.class);
-                    List<Question> pageQuestions = responseWrapper.getItems();
-                    questions.addAll(pageQuestions);
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+        OkHttpClient client = new OkHttpClient();
+        for (int i = 1; i < 21; i++) {
+            HttpUrl url = Objects.requireNonNull(HttpUrl.parse("https://api.stackexchange.com/2.3/questions/"))
+                    .newBuilder()
+                    .addQueryParameter("page", String.valueOf(i))
+                    .addQueryParameter("order", "desc")
+                    .addQueryParameter("sort", "activity")
+                    .addQueryParameter("site", SITE)
+                    .addQueryParameter("pagesize", "35")
+                    .addQueryParameter("tagged",TAGS)
+                    .addQueryParameter("key", "kDEglsq4D1FxRSKZoRd24Q((")
+                    .addQueryParameter("client_id", "26195")
+                    .addQueryParameter("filter", "!6WPIommDahvGx")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            try (Response response = client.newCall(request).execute()) {
+                assert response.body() != null;
+                String json = response.body().string();
+                System.out.println(json);
+                ObjectMapper mapper = new ObjectMapper();
+                ResponseWrapper responseWrapper = mapper.readValue(json, ResponseWrapper.class);
+                List<Question> pageQuestions = responseWrapper.getItems();
+                questions.addAll(pageQuestions);
+                System.out.println(i);
+                Thread.sleep(1000);
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            // Write the result to a file in JSON format
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> items = new HashMap<>();
-            items.put("items", questions);
-            FileWriter writer = new FileWriter("src/main/resources/Ouput/questions.json");
-            mapper.writerWithDefaultPrettyPrinter().writeValue(writer, items);
-            writer.close();
-            System.out.println("Data saved as output.json");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        // Write the result to a file in JSON format
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> items = new HashMap<>();
+        items.put("items", questions);
+        FileWriter writer = new FileWriter("src/main/resources/Ouput/questions.json");
+        mapper.writerWithDefaultPrettyPrinter().writeValue(writer, items);
+        writer.close();
+        System.out.println("Data saved as output.json");
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ResponseWrapper {
         private List<Question> items;
+
         public List<Question> getItems() {
             return items;
         }
@@ -68,6 +85,7 @@ public class Get {
             this.items = items;
         }
     }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Question {
         private List<String> tags;
@@ -79,6 +97,7 @@ public class Get {
         private long last_activity_date;
         private long creation_date;
         private long question_id;
+        private int up_vote_count;
         private String content_license;
         private String link;
         private String title;
@@ -117,6 +136,10 @@ public class Get {
 
         public long getCreation_date() {
             return creation_date;
+        }
+
+        public int getUp_vote_count() {
+            return up_vote_count;
         }
 
         public long getLast_activity_date() {
@@ -177,6 +200,10 @@ public class Get {
 
         public void setView_count(int view_count) {
             this.view_count = view_count;
+        }
+
+        public void setUp_vote_count(int up_vote_count) {
+            this.up_vote_count = up_vote_count;
         }
     }
 }

@@ -62,7 +62,7 @@ public class GetAnswer {
                 List<Question> pageQuestions = responseWrapper.getItems();
                 questions.addAll(pageQuestions);
                 System.out.println(i);
-                Thread.sleep(2000);
+                Thread.sleep(1500);
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -96,6 +96,7 @@ public class GetAnswer {
         private owner owner;
         private boolean is_accepted;
         private int score;
+        private int up_vote_count;
         private long last_activity_date;
         private long last_edit_date;
         private long creation_date;
@@ -109,6 +110,10 @@ public class GetAnswer {
 
         public long getAnswer_id() {
             return answer_id;
+        }
+
+        public int getUp_vote_count() {
+            return up_vote_count;
         }
 
         public long getQuestion_id() {
@@ -169,6 +174,10 @@ public class GetAnswer {
 
         public void setOwner(cse.java2.project.classes.owner owner) {
             this.owner = owner;
+        }
+
+        public void setUp_vote_count(int up_vote_count) {
+            this.up_vote_count = up_vote_count;
         }
 
         public void setScore(int score) {
