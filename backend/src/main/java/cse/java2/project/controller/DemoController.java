@@ -37,6 +37,7 @@ public class DemoController {
         a.put(1, 2);
         return a;
     }
+
     @GetMapping({"/", "/noAnsRate"})
     @ResponseBody
     public double noAnsRate() {
@@ -44,15 +45,14 @@ public class DemoController {
             JSONTokener jsonTokener = new JSONTokener(i);
             JSONObject qq = new JSONObject(jsonTokener);
             JSONArray qarray = qq.getJSONArray("items");
-            System.out.println(qarray);
             double unanswered = 0.0;
             for (int j = 0; j < qarray.length(); j++) {
-                boolean isAnswered = qarray.getJSONObject(j).getBoolean("is_answered");
-                if (!isAnswered) {
+                int isAnswered = qarray.getJSONObject(j).getInt("answer_count");
+                if (isAnswered == 0) {
                     unanswered++;
                 }
             }
-            return (double) unanswered / qarray.length() * 100;
+            return Double.parseDouble(String.format("%.4f", (double) unanswered / qarray.length() * 100));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,8 +76,8 @@ public class DemoController {
                 }
             }
             Map<String, Double> map = new TreeMap<>();
-            map.put("avg", (double) count / qarray.length());
-            map.put("max", (double) max);
+            map.put("avg", Double.parseDouble(String.format("%.2f", (double) count / qarray.length())));
+            map.put("max", Double.parseDouble(String.format("%.0f", (double) max)));
             return map;
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,20 +87,30 @@ public class DemoController {
 
     @GetMapping({"/", "/ans_dis"})
     @ResponseBody
-    public Map<Integer, Integer> ans_dis() {
+    public Map<String, Integer> ans_dis() {
         try (InputStream i = new FileInputStream("src/main/resources/Ouput/questions.json")) {
             JSONTokener jsonTokener = new JSONTokener(i);
             JSONObject qq = new JSONObject(jsonTokener);
             JSONArray qarray = qq.getJSONArray("items");
 
-            Map<Integer, Integer> map = new TreeMap<>();
+            Map<String, Integer> map = new TreeMap<>();
+            map.put("a", 0);
+            map.put("b", 0);
+            map.put("c", 0);
+            map.put("d", 0);
+            map.put("e", 0);
             for (int j = 0; j < qarray.length(); j++) {
                 int mm = qarray.getJSONObject(j).getInt("answer_count");
-                if (map.containsKey(mm)) {
-                    int now = map.get(mm);
-                    map.replace(mm, now + 1);
+                if (mm < 1) {
+                    map.put("a", map.get("a") + 1);
+                } else if (mm < 3) {
+                    map.put("b", map.get("b") + 1);
+                } else if (mm < 8) {
+                    map.put("c", map.get("c") + 1);
+                } else if (mm < 20) {
+                    map.put("d", map.get("d") + 1);
                 } else {
-                    map.put(mm, 1);
+                    map.put("e", map.get("e") + 1);
                 }
             }
             return map;
@@ -124,7 +134,7 @@ public class DemoController {
                     unanswered++;
                 }
             }
-            return (double) unanswered / qarray.length() * 100;
+            return Double.parseDouble(String.format("%.2f", (double) unanswered / qarray.length() * 100));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -133,8 +143,14 @@ public class DemoController {
 
     @GetMapping({"/", "/Time_dist"})
     @ResponseBody
-    public Map<Integer, Integer> Time_dist() {
-        Map<Integer, Integer> map = new TreeMap<>();
+    public Map<String, Integer> Time_dist() {
+        Map<String, Integer> map = new TreeMap<>();
+        map.put("a", 0);
+        map.put("b", 0);
+        map.put("c", 0);
+        map.put("d", 0);
+        map.put("e", 0);
+        map.put("f", 0);
         try (InputStream i = new FileInputStream("src/main/resources/Ouput/answers.json")) {
             JSONTokener jsonTokener = new JSONTokener(i);
             JSONObject ans = new JSONObject(jsonTokener);
@@ -154,12 +170,19 @@ public class DemoController {
                     }
                 }
                 long date_ans = ans_array.getJSONObject(j).getLong("creation_date");
-                int delta = (int) (date_ans - date_que);
-                if (map.containsKey(delta)) {
-                    int now = map.get(delta);
-                    map.replace(delta, now + 1);
+                int mm = (int) (date_ans - date_que);
+                if (mm < 43200) {//12h
+                    map.put("a", map.get("a") + 1);
+                } else if (mm < 86400 * 30) {//30d
+                    map.put("b", map.get("b") + 1);
+                } else if (mm < 86400 * 360) {//1d
+                    map.put("c", map.get("c") + 1);
+                } else if (mm < 86400 * 360 * 3) {//3y
+                    map.put("d", map.get("d") + 1);
+                } else if (mm < 86400 * 360 * 6) {//5y
+                    map.put("e", map.get("e") + 1);
                 } else {
-                    map.put(delta, 1);
+                    map.put("f", map.get("f") + 1);
                 }
             }
         } catch (IOException e) {
@@ -209,7 +232,7 @@ public class DemoController {
 
     @GetMapping({"/", "/most_tags"})
     @ResponseBody
-    public Map<String, Integer> Mtages() {
+    public Map<String, List<String>> Mtages() {
         Map<String, Integer> map = new LinkedHashMap<>();
         try {
 
@@ -239,10 +262,20 @@ public class DemoController {
                 }
             });
             map.clear();
+            int i = 0;
+            List<String> a = new ArrayList<>();
+            List<String> b = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : entryList) {
-                map.put(entry.getKey(), entry.getValue());
+
+                if (i >= 10) break;
+                a.add(entry.getKey());
+                b.add(entry.getValue().toString());
+                i++;
             }
-            return map;
+            Map<String, List<String>> mapp = new TreeMap<>();
+            mapp.put("a", a);
+            mapp.put("b", b);
+            return mapp;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -251,7 +284,7 @@ public class DemoController {
 
     @GetMapping({"/", "/vote_tags"})
     @ResponseBody
-    public Map<String, Integer> Vtages() {
+    public Map<String, List<String>> Vtages() {
         Map<String, Integer> map = new LinkedHashMap<>();
         try {
 
@@ -284,10 +317,20 @@ public class DemoController {
                 }
             });
             map.clear();
+            int i = 0;
+            List<String> a = new ArrayList<>();
+            List<String> b = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : entryList) {
-                map.put(entry.getKey(), entry.getValue());
+
+                if (i >= 5) break;
+                a.add(entry.getKey().substring(5));
+                b.add(entry.getValue().toString());
+                i++;
             }
-            return map;
+            Map<String, List<String>> mapp = new TreeMap<>();
+            mapp.put("a", a);
+            mapp.put("b", b);
+            return mapp;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -296,7 +339,7 @@ public class DemoController {
 
     @GetMapping({"/", "/view_tags"})
     @ResponseBody
-    public Map<String, Integer> Viewtages() {
+    public Map<String, List<String>> Viewtages() {
         Map<String, Integer> map = new LinkedHashMap<>();
         try {
 
@@ -329,10 +372,20 @@ public class DemoController {
                 }
             });
             map.clear();
+            int i = 0;
+            List<String> a = new ArrayList<>();
+            List<String> b = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : entryList) {
-                map.put(entry.getKey(), entry.getValue());
+
+                if (i >= 5) break;
+                a.add(entry.getKey().substring(5));
+                b.add(entry.getValue().toString());
+                i++;
             }
-            return map;
+            Map<String, List<String>> mapp = new TreeMap<>();
+            mapp.put("a", a);
+            mapp.put("b", b);
+            return mapp;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -341,7 +394,7 @@ public class DemoController {
 
     @GetMapping({"/", "/Threads"})
     @ResponseBody
-    public Map<String, Integer> Threads() {
+    public Map<String, List<String>> Threads() {
         Map<String, Integer> map = new TreeMap<>();
         for (int i = 0; i < 26; i++) {
             char a = (char) ('a' + i);
@@ -407,7 +460,17 @@ public class DemoController {
                     map.put("Others", map.get("Others") + 1);
                 }
             }
-            return map;
+            List<String> a = new ArrayList<>();
+            List<String> b = new ArrayList<>();
+            List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
+            for (Map.Entry<String, Integer> entry : entryList) {
+                a.add(entry.getKey());
+                b.add(entry.getValue().toString());
+            }
+            Map<String, List<String>> mapp = new TreeMap<>();
+            mapp.put("a", a);
+            mapp.put("b", b);
+            return mapp;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -418,20 +481,16 @@ public class DemoController {
     @ResponseBody
     public Map<String, Integer> Threads_ans() {
         Map<String, Integer> map = new TreeMap<>();
-        for (int i = 0; i < 26; i++) {
-            char a = (char) ('a' + i);
-            String tmp = String.valueOf(a);
-            map.put(tmp, 0);
-        }
-        map.put("Others", 0);
+        map.put("ans", 0);
+        map.put("com",0);
+        map.put("both",0);
         try {
-
-
             JSONTokener jsonTokener = new JSONTokener(new FileInputStream("src/main/resources/Ouput/answers.json"));
             JSONObject ans = new JSONObject(jsonTokener);
             JSONArray ans_array = ans.getJSONArray("items");
 
             List<Integer> number = new ArrayList<>();
+            List<Integer> number2 = new ArrayList<>();
             for (int i = 0; i < ans_array.length(); i++) {
                 JSONObject tmp_ans = ans_array.getJSONObject(i);
                 int num = tmp_ans.getJSONObject("owner").getInt("user_id");
@@ -439,50 +498,21 @@ public class DemoController {
                 else {
                     number.add(num);
                 }
-                String p = String.valueOf(tmp_ans.getJSONObject("owner").getString("display_name").toCharArray()[0]).toLowerCase();
-                p = p.toLowerCase();
-                if (map.containsKey(p)) {
-                    map.put(p, map.get(p) + 1);
-                } else {
-                    map.put("Others", map.get("Others") + 1);
-                }
+                map.put("ans",map.get("ans")+1);
             }
-            return map;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @GetMapping({"/", "/Threads_com"})
-    @ResponseBody
-    public Map<String, Integer> Threads_com() {
-        Map<String, Integer> map = new TreeMap<>();
-        for (int i = 0; i < 26; i++) {
-            char a = (char) ('a' + i);
-            String tmp = String.valueOf(a);
-            map.put(tmp, 0);
-        }
-        map.put("Others", 0);
-        try {
             JSONTokener jsonTokener3 = new JSONTokener(new FileInputStream("src/main/resources/Ouput/comments.json"));
             JSONObject com = new JSONObject(jsonTokener3);
             JSONArray com_array = com.getJSONArray("items");
-            List<Integer> number = new ArrayList<>();
             for (int i = 0; i < com_array.length(); i++) {
                 JSONObject tmp_com = com_array.getJSONObject(i);
                 int num = tmp_com.getJSONObject("owner").getInt("user_id");
-                if (number.contains(num)) continue;
+                if (number2.contains(num)) continue;
                 else {
-                    number.add(num);
+                    number2.add(num);
+                }if(number.contains(num)){
+                    map.put("both",map.get("both")+1);
                 }
-                String p = String.valueOf(tmp_com.getJSONObject("owner").getString("display_name").toCharArray()[0]).toLowerCase();
-
-                if (map.containsKey(p)) {
-                    map.put(p, map.get(p) + 1);
-                } else {
-                    map.put("Others", map.get("Others") + 1);
-                }
+                map.put("com",map.get("com")+1);
             }
             return map;
         } catch (IOException e) {
@@ -491,9 +521,10 @@ public class DemoController {
         return null;
     }
 
+
     @GetMapping({"/", "/Threads_most"})
     @ResponseBody
-    public Map<Integer, Integer> Threads_most() {
+    public Map<String, List<Integer>> Threads_most() {
         Map<Integer, Integer> map = new LinkedHashMap<>();
         try {
 
@@ -513,31 +544,31 @@ public class DemoController {
             for (int j = 0; j < que_array.length(); j++) {
                 JSONObject tmp = que_array.getJSONObject(j);
                 int nn = tmp.getJSONObject("owner").getInt("user_id");
-                if(nn==-1)continue;
+                if (nn == -1) continue;
                 if (map.containsKey(nn)) {
                     map.put(nn, map.get(nn) + 1);
                 } else {
-                    map.put(nn,  1);
+                    map.put(nn, 1);
                 }
             }
             for (int i = 0; i < ans_array.length(); i++) {
                 JSONObject tmp_ans = ans_array.getJSONObject(i);
                 int nn = tmp_ans.getJSONObject("owner").getInt("user_id");
-                if(nn==-1)continue;
+                if (nn == -1) continue;
                 if (map.containsKey(nn)) {
                     map.put(nn, map.get(nn) + 1);
                 } else {
-                    map.put(nn,  1);
+                    map.put(nn, 1);
                 }
             }
             for (int i = 0; i < com_array.length(); i++) {
                 JSONObject tmp_com = com_array.getJSONObject(i);
                 int nn = tmp_com.getJSONObject("owner").getInt("user_id");
-                if(nn==-1)continue;
+                if (nn == -1) continue;
                 if (map.containsKey(nn)) {
                     map.put(nn, map.get(nn) + 1);
                 } else {
-                    map.put(nn,  1);
+                    map.put(nn, 1);
                 }
             }
             List<Map.Entry<Integer, Integer>> entryList = new ArrayList<>(map.entrySet());
@@ -547,10 +578,21 @@ public class DemoController {
                 }
             });
             map.clear();
+            int i = 0;
+            List<Integer> a = new ArrayList<>();
+            List<Integer> b = new ArrayList<>();
             for (Map.Entry<Integer, Integer> entry : entryList) {
-                map.put(entry.getKey(), entry.getValue());
+
+                if(entry.getKey()==0)continue;
+                if (i >= 10) break;
+                a.add(entry.getKey());
+                b.add(entry.getValue());
+                i++;
             }
-            return map;
+            Map<String, List<Integer>> mapp = new TreeMap<>();
+            mapp.put("a", a);
+            mapp.put("b", b);
+            return mapp;
         } catch (IOException e) {
             e.printStackTrace();
         }
