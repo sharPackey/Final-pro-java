@@ -223,7 +223,7 @@ public class DemoController {
                     }
                 }
             }
-            return count / ans_array.length() * 100.0;
+            return Double.parseDouble(String.format("%.2f",count / ans_array.length() * 100.0));
         } catch (IOException e) {
             e.printStackTrace();
         }

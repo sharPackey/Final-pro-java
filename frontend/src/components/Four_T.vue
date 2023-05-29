@@ -4,9 +4,9 @@
     <div>总数：{{ this.total }}</div>
   </div>
   <div style="height:300px;display: flex;">
-    <div ref="chart" style="width: 350px; height: 350px;margin-left: 150px"></div>
-    <div ref="char" style="width: 350px; height: 350px;margin-left: 50px"></div>
-    <div ref="cha" style="width: 350px; height: 350px;margin-left: 50px"></div>
+    <div ref="chart" style="width: 450px; height: 350px;margin-left: 50px"></div>
+    <div ref="char" style="width: 420px; height: 350px;margin-left: 20px"></div>
+    <div ref="cha" style="width: 420px; height: 350px;margin-left: 50px"></div>
   </div>
   __________________________________________________________________________________________________________________
   <div style="width:300px;height:30px;margin-left: 0">详细数据与分布：
@@ -71,7 +71,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd, name: this.dd},
+              {value: this.dd, name: "参与回答:"+this.dd},
               {value: this.total - this.dd, name: this.total - this.dd},
             ],
           },
@@ -88,7 +88,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd2, name: this.dd2},
+              {value: this.dd2, name: "参与评论:"+this.dd2},
               {value: this.total - this.dd2, name: this.total - this.dd2},
             ],
           },
@@ -105,7 +105,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd3, name: this.dd3},
+              {value: this.dd3, name:"同时参与:"+ this.dd3},
               {value: this.total - this.dd3, name: this.total - this.dd3},
             ],
           },

@@ -40,7 +40,8 @@ public class GetCom {
         OkHttpClient client = new OkHttpClient();
 
         for (int i = 0; i < ans_array.length(); i++) {
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse("https://api.stackexchange.com/2.3/questions/" + ans_array.getJSONObject(i).getLong("question_id") + "/comments"))
+            HttpUrl url = Objects.requireNonNull(HttpUrl.parse("https://api.stackexchange.com/2.3/questions/"
+                            + ans_array.getJSONObject(i).getLong("question_id") + "/comments"))
                     .newBuilder()
                     .addQueryParameter("order", "desc")
                     .addQueryParameter("sort", "creation")

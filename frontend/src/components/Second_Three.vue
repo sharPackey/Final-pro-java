@@ -1,13 +1,13 @@
 <template>
   <div style="width:600px;height:10px;margin-left: 0">占比状况（左右蓝色为目标数据）：</div>
   <div style="display: flex;">
-    <div ref="chart" style="width: 350px; height: 350px;margin-left: 300px"></div>
-    <div ref="char" style="width: 350px; height: 350px;margin-left: 100px"></div>
+    <div ref="chart" style="width: 450px; height: 350px;margin-left: 200px"></div>
+    <div ref="char" style="width: 450px; height: 350px;margin-left: 50px"></div>
   </div>
   __________________________________________________________________________________________________________________
-  <div style="width:300px;height:30px;margin-left: 0">详细数据与分布：
+  <div style="width:300px;height:30px;margin-left: 100px">从被提出到被解决时间差分布：
   </div>
-  <div ref="chartContainer" style="width: 1000px; height: 400px;"></div>
+  <div ref="chartContainer" style="width: 1000px; height: 400px;margin-left: 150px"></div>
   <div></div>
 </template>
 
@@ -58,8 +58,8 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd, name: this.dd + "%"},
-              {value: 100 - this.dd, name: 100 - this.dd + "%"},
+              {value: this.dd, name: "已解决:"+this.dd + "%"},
+              {value: 100 - this.dd, name: "未解决:"+(100 - this.dd) + "%"},
             ],
           },
         ],
@@ -75,7 +75,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd, name: this.dd + "%"},
+              {value: this.dd, name: "点赞反超:"+this.dd + "%"},
               {value: 100 - this.dd, name: 100 - this.dd + "%"},
             ],
           },

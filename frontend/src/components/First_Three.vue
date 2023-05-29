@@ -1,6 +1,6 @@
 <template>
-  <div style="width:600px;height:10px;margin-left: 0">占比状况（蓝色为没有答案问题数（不包括有答案但未采纳））：</div>
-  <div ref="chart" style="width: 350px; height: 350px; margin-left: 500px"></div>
+  <div style="width:600px;height:10px;margin-left: 0">占比状况：</div>
+  <div ref="chart" style="width: 500px; height: 350px; margin-left: 500px"></div>
   __________________________________________________________________________________________________________________
   <div style="width:300px;height:30px;margin-left: 0">详细数据与分布：
 
@@ -56,8 +56,8 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              {value: this.dd, name: this.dd + "%"},
-              {value: 100 - this.dd, name: 100 - this.dd + "%"},
+              {value: this.dd, name: "无答案问题:"+this.dd + "%"},
+              {value: 100 - this.dd, name: "有答案问题:"+(100 - this.dd) + "%"},
             ],
           },
         ],
